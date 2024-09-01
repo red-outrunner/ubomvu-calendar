@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Calendar App</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>
+    <style>
+        body, html {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            height: 100%;
+        }
+        .container {
+            display: flex;
+            height: 100%;
+        }
+        .sidebar {
+            width: 300px;
+            background-color: #f0f0f0;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .main-content {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        h1, h2 {
+            margin-top: 0;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 5px;
+        }
+        button {
+            cursor: pointer;
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+        }
+        .event {
+            background-color: #f9f9f9;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+        .past-event {
+            opacity: 0.7;
+        }
+        .event-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .event-actions button {
+            padding: 5px 10px;
+            font-size: 0.8em;
+        }
+        .delete-btn {
+            background-color: #dc3545;
+        }
+        .edit-btn {
+            background-color: #ffc107;
+            color: black;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <h2>Add/Edit Event</h2>
+            <form id="eventForm">
+                <input type="hidden" id="eventId">
+                <input type="text" id="title" placeholder="Event Title" required>
+                <textarea id="description" placeholder="Event Description" required></textarea>
+                <input type="datetime-local" id="startTime" required>
+                <input type="datetime-local" id="endTime" required>
+                <button type="submit" id="submitBtn">Add Event</button>
+            </form>
+        </div>
+        <div class="main-content">
+            <h1>Calendar Events</h1>
+            <h2>Upcoming Events</h2>
+            <div id="upcomingEvents"></div>
+            <h2>Past Events</h2>
+            <div id="pastEvents"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8080';
+        let currentEvents = [];
+
+        async function handleEventSubmit(event) {
+            event.preventDefault();
+            const formData = {
+                title: document.getElementById('title').value,
+                description: document.getElementById('description').value,
+                start_time: new Date(document.getElementById('startTime').value).toISOString(),
+                end_time: new Date(document.getElementById('endTime').value).toISOString()
+            };
+            const eventId = document.getElementById('eventId').value;
+            try {
+                if (eventId) {
+                    await axios.put(`${API_URL}/events/${eventId}`, formData);
+                } else {
+                    await axios.post(`${API_URL}/events`, formData);
+                }
+                resetForm();
+                fetchEvents();
+            } catch (error) {
+                console.error('Error handling event:', error);
+            }
+        }
+
+        function resetForm() {
+            document.getElementById('eventForm').reset();
+            document.getElementById('eventId').value = '';
+            document.getElementById('submitBtn').textContent = 'Add Event';
+        }
+
+        async function fetchEvents() {
+            try {
+                const response = await axios.get(`${API_URL}/events`);
+                currentEvents = response.data;
+                renderEvents();
+            } catch (error) {
+                console.error('Error fetching events:', error);
+            }
+        }
+
+        function renderEvents() {
+            const now = new Date();
+            const upcomingEvents = currentEvents.filter(event => new Date(event.start_time) > now);
+            const pastEvents = currentEvents.filter(event => new Date(event.start_time) <= now);
+
+            renderEventList(upcomingEvents, 'upcomingEvents');
+            renderEventList(pastEvents, 'pastEvents', true);
+        }
+
+        function renderEventList(events, elementId, isPast = false) {
+            const eventsDiv = document.getElementById(elementId);
+            eventsDiv.innerHTML = '';
+            events.forEach(event => {
+                const eventElement = document.createElement('div');
+                eventElement.className = `event ${isPast ? 'past-event' : ''}`;
+                eventElement.innerHTML = `
+                    <h3>${event.title}</h3>
+                    <p>${event.description}</p>
+                    <p>Start: ${new Date(event.start_time).toLocaleString()}</p>
+                    <p>End: ${new Date(event.end_time).toLocaleString()}</p>
+                    <div class="event-actions">
+                        <button class="edit-btn" onclick="editEvent('${event.id}')">Edit</button>
+                        <button class="delete-btn" onclick="deleteEvent('${event.id}')">Delete</button>
+                    </div>
+                `;
+                eventsDiv.appendChild(eventElement);
+            });
+        }
+
+        function editEvent(id) {
+            const event = currentEvents.find(e => e.id === id);
+            if (event) {
+                document.getElementById('eventId').value = event.id;
+                document.getElementById('title').value = event.title;
+                document.getElementById('description').value = event.description;
+                document.getElementById('startTime').value = new Date(event.start_time).toISOString().slice(0, 16);
+                document.getElementById('endTime').value = new Date(event.end_time).toISOString().slice(0, 16);
+                document.getElementById('submitBtn').textContent = 'Update Event';
+            }
+        }
+
+        async function deleteEvent(id) {
+            try {
+                await axios.delete(`${API_URL}/events/${id}`);
+                fetchEvents();
+            } catch (error) {
+                console.error('Error deleting event:', error);
+            }
+        }
+
+        document.getElementById('eventForm').addEventListener('submit', handleEventSubmit);
+        fetchEvents();
+    </script>
+</body>
+</html>
