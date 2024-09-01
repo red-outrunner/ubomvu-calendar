@@ -4,130 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Comprehensive Calendar App</title>
+    <link rel="stylesheet" href="styles.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/date-fns/2.29.3/date-fns.min.js"></script>
-    <style>
-        body, html {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            height: 100%;
-        }
-        .container {
-            display: flex;
-            height: 100%;
-        }
-        .sidebar {
-            width: 300px;
-            background-color: #f0f0f0;
-            padding: 20px;
-            overflow-y: auto;
-        }
-        .main-content {
-            flex-grow: 1;
-            padding: 20px;
-            overflow-y: auto;
-        }
-        nav {
-            background-color: #333;
-            padding: 10px;
-        }
-        nav a {
-            color: white;
-            text-decoration: none;
-            padding: 10px;
-            margin-right: 10px;
-        }
-        h1, h2, h3 {
-            margin-top: 0;
-        }
-        form {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        input, textarea, select {
-            width: 100%;
-            padding: 5px;
-        }
-        button {
-            cursor: pointer;
-            padding: 10px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-        }
-        .event {
-            background-color: #f9f9f9;
-            padding: 10px;
-            margin-bottom: 10px;
-            border-radius: 5px;
-        }
-        .past-event {
-            opacity: 0.7;
-        }
-        .event-actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-            margin-top: 10px;
-        }
-        .event-actions button {
-            padding: 5px 10px;
-            font-size: 0.8em;
-        }
-        .delete-btn {
-            background-color: #dc3545;
-        }
-        .edit-btn {
-            background-color: #ffc107;
-            color: black;
-        }
-        .calendar {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 5px;
-        }
-        .calendar-day {
-            border: 1px solid #ddd;
-            padding: 5px;
-            min-height: 100px;
-        }
-        .calendar-day-header {
-            font-weight: bold;
-            text-align: center;
-            padding: 5px;
-            background-color: #f0f0f0;
-        }
-        .collapsible {
-            background-color: #777;
-            color: white;
-            cursor: pointer;
-            padding: 18px;
-            width: 100%;
-            border: none;
-            text-align: left;
-            outline: none;
-            font-size: 15px;
-        }
-        .active, .collapsible:hover {
-            background-color: #555;
-        }
-        .content {
-            padding: 0 18px;
-            display: none;
-            overflow: hidden;
-            background-color: #f1f1f1;
-        }
-        .add-something-new {
-            text-align: center;
-            padding: 20px;
-            background-color: #e9ecef;
-            border-radius: 5px;
-            margin-top: 10px;
-        }
-    </style>
 </head>
 <body>
     <nav>
@@ -161,202 +40,25 @@
                 </div>
                 <button class="collapsible active">Month View</button>
                 <div class="content" id="monthView" style="display:block;">
-                    <div class="calendar" id="monthCalendar"></div>
+                    <div class="calendar" id="monthCalendar">
+                        <div class="month">
+                            <h2>September 2024</h2>
+                        </div>
+                        <div class="weekdays">
+                            <div>Sun</div>
+                            <div>Mon</div>
+                            <div>Tue</div>
+                            <div>Wed</div>
+                            <div>Thu</div>
+                            <div>Fri</div>
+                            <div>Sat</div>
+                        </div>
+                        <div class="days"></div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-
-    <script>
-        const API_URL = 'http://localhost:8080';
-        let currentEvents = [];
-        let currentDate = new Date();
-
-        async function handleEventSubmit(event) {
-            event.preventDefault();
-            const formData = {
-                title: document.getElementById('title').value,
-                description: document.getElementById('description').value,
-                start_time: new Date(document.getElementById('startTime').value).toISOString(),
-                end_time: new Date(document.getElementById('endTime').value).toISOString()
-            };
-            const eventId = document.getElementById('eventId').value;
-            try {
-                if (eventId) {
-                    await axios.put(`${API_URL}/events/${eventId}`, formData);
-                } else {
-                    await axios.post(`${API_URL}/events`, formData);
-                }
-                resetForm();
-                fetchEvents();
-            } catch (error) {
-                console.error('Error handling event:', error);
-            }
-        }
-
-        function resetForm() {
-            document.getElementById('eventForm').reset();
-            document.getElementById('eventId').value = '';
-            document.getElementById('submitBtn').textContent = 'Add Event';
-        }
-
-        async function fetchEvents() {
-            try {
-                const response = await axios.get(`${API_URL}/events`);
-                currentEvents = response.data;
-                renderEvents();
-                renderCalendars();
-            } catch (error) {
-                console.error('Error fetching events:', error);
-            }
-        }
-
-        function renderEvents() {
-            const now = new Date();
-            const upcomingEvents = currentEvents.filter(event => new Date(event.start_time) > now);
-            const pastEvents = currentEvents.filter(event => new Date(event.start_time) <= now);
-
-            renderEventList(upcomingEvents, 'upcomingEvents');
-            renderEventList(pastEvents, 'pastEvents', true);
-        }
-
-        function renderEventList(events, elementId, isPast = false) {
-            const eventsDiv = document.getElementById(elementId);
-            eventsDiv.innerHTML = '';
-            if (events.length === 0 && !isPast) {
-                eventsDiv.innerHTML = '<div class="add-something-new">Add something new</div>';
-                return;
-            }
-            events.forEach(event => {
-                const eventElement = document.createElement('div');
-                eventElement.className = `event ${isPast ? 'past-event' : ''}`;
-                eventElement.innerHTML = `
-                    <h3>${event.title}</h3>
-                    <p>${event.description}</p>
-                    <p>Start: ${new Date(event.start_time).toLocaleString()}</p>
-                    <p>End: ${new Date(event.end_time).toLocaleString()}</p>
-                    <div class="event-actions">
-                        <button class="edit-btn" onclick="editEvent('${event.id}')">Edit</button>
-                        <button class="delete-btn" onclick="deleteEvent('${event.id}')">Delete</button>
-                    </div>
-                `;
-                eventsDiv.appendChild(eventElement);
-            });
-        }
-
-        function editEvent(id) {
-            const event = currentEvents.find(e => e.id === id);
-            if (event) {
-                document.getElementById('eventId').value = event.id;
-                document.getElementById('title').value = event.title;
-                document.getElementById('description').value = event.description;
-                document.getElementById('startTime').value = new Date(event.start_time).toISOString().slice(0, 16);
-                document.getElementById('endTime').value = new Date(event.end_time).toISOString().slice(0, 16);
-                document.getElementById('submitBtn').textContent = 'Update Event';
-                showSection('addEdit');
-            }
-        }
-
-        async function deleteEvent(id) {
-            try {
-                await axios.delete(`${API_URL}/events/${id}`);
-                fetchEvents();
-            } catch (error) {
-                console.error('Error deleting event:', error);
-            }
-        }
-
-        function showSection(sectionName) {
-            document.getElementById('addEditSection').style.display = sectionName === 'addEdit' ? 'block' : 'none';
-            document.getElementById('calendarSection').style.display = sectionName === 'calendar' ? 'block' : 'none';
-            if (sectionName === 'calendar') {
-                renderCalendars();
-            }
-        }
-
-        function renderCalendars() {
-            renderWeekCalendar();
-            renderMonthCalendar();
-        }
-
-        function renderWeekCalendar() {
-            const weekStart = dateFns.startOfWeek(currentDate);
-            const weekCalendar = document.getElementById('weekCalendar');
-            weekCalendar.innerHTML = '';
-
-            for (let i = 0; i < 7; i++) {
-                const day = dateFns.addDays(weekStart, i);
-                const dayElement = document.createElement('div');
-                dayElement.className = 'calendar-day';
-                dayElement.innerHTML = `
-                    <div class="calendar-day-header">${dateFns.format(day, 'EEE MM/dd')}</div>
-                    <div class="calendar-day-events"></div>
-                `;
-                weekCalendar.appendChild(dayElement);
-                renderEventsForDay(day, dayElement.querySelector('.calendar-day-events'));
-            }
-        }
-
-        function renderMonthCalendar() {
-            const monthStart = dateFns.startOfMonth(currentDate);
-            const monthEnd = dateFns.endOfMonth(currentDate);
-            const startDate = dateFns.startOfWeek(monthStart);
-            const endDate = dateFns.endOfWeek(monthEnd);
-
-            const monthCalendar = document.getElementById('monthCalendar');
-            monthCalendar.innerHTML = '';
-
-            for (let i = 0; i < 7; i++) {
-                const dayHeader = document.createElement('div');
-                dayHeader.className = 'calendar-day-header';
-                dayHeader.textContent = dateFns.format(dateFns.addDays(startDate, i), 'EEE');
-                monthCalendar.appendChild(dayHeader);
-            }
-
-            let day = startDate;
-            while (day <= endDate) {
-                const dayElement = document.createElement('div');
-                dayElement.className = 'calendar-day';
-                dayElement.innerHTML = `
-                    <div>${dateFns.format(day, 'd')}</div>
-                    <div class="calendar-day-events"></div>
-                `;
-                monthCalendar.appendChild(dayElement);
-                renderEventsForDay(day, dayElement.querySelector('.calendar-day-events'));
-                day = dateFns.addDays(day, 1);
-            }
-        }
-
-        function renderEventsForDay(day, container) {
-            const eventsForDay = currentEvents.filter(event => 
-                dateFns.isSameDay(new Date(event.start_time), day)
-            );
-            eventsForDay.forEach(event => {
-                const eventElement = document.createElement('div');
-                eventElement.className = 'event';
-                eventElement.textContent = event.title;
-                eventElement.title = `${event.title}\n${event.description}\nStart: ${new Date(event.start_time).toLocaleString()}\nEnd: ${new Date(event.end_time).toLocaleString()}`;
-                container.appendChild(eventElement);
-            });
-        }
-
-        document.getElementById('eventForm').addEventListener('submit', handleEventSubmit);
-
-        // Set up collapsible sections
-        const coll = document.getElementsByClassName("collapsible");
-        for (let i = 0; i < coll.length; i++) {
-            coll[i].addEventListener("click", function() {
-                this.classList.toggle("active");
-                const content = this.nextElementSibling;
-                if (content.style.display === "block") {
-                    content.style.display = "none";
-                } else {
-                    content.style.display = "block";
-                }
-            });
-        }
-
-        fetchEvents();
-    </script>
+    <script src="scripts.js"></script>
 </body>
 </html>
