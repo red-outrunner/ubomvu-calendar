@@ -1,3 +1,7 @@
+// Pseudo - Ubomvu cal
+// start:
+
+
 // JavaScript to handle calendar display and navigation
 
 let currentDate = new Date();
@@ -100,3 +104,5 @@ function hideEventPopup() {
     const popup = document.getElementById('event-popup');
     popup.classList.add('hidden');
 }
+
+// Popup on hover
