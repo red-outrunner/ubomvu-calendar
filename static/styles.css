@@ -1,0 +1,83 @@
+/* Calendar styling */
+.container {
+    width: 80%;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.calendar-nav {
+    margin: 20px 0;
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    grid-gap: 10px;
+}
+
+.day-of-week {
+    font-weight: bold;
+}
+
+.empty-cell,
+.day-cell {
+    border: 1px solid #ccc;
+    padding: 10px;
+    height: 80px;
+    position: relative;
+}
+
+.day-cell:hover {
+    background-color: #f0f0f0;
+    cursor: pointer;
+}
+
+/* Event dot styles */
+.event-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+}
+
+.high-priority {
+    background-color: red;
+}
+
+.normal-priority {
+    background-color: blue;
+}
+
+/* Event popup styling */
+.event-popup {
+    position: absolute;
+    background-color: white;
+    border: 1px solid #ccc;
+    padding: 10px;
+    display: block;
+    z-index: 1000;
+    pointer-events: none;
+}
+
+.event-popup.hidden {
+    display: none;
+}
+
+.add-event-btn {
+    background-color: #28a745;
+    color: white;
+    padding: 5px 10px;
+    border: none;
+    cursor: pointer;
+    margin-top: 5px;
+}
+
+.add-event-btn:hover {
+    background-color: #218838;
+}
+
+.no-event {
+    font-style: italic;
+}

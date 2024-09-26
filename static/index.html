@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendar</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1 id="month-year"></h1>
+        <div class="calendar-nav">
+            <button id="prev-month">Previous Month</button>
+            <button id="next-month">Next Month</button>
+        </div>
+        <div class="calendar-grid">
+            <!-- Calendar cells will go here -->
+        </div>
+        <div id="event-popup" class="event-popup hidden">
+        	<p id="event-details"></p>
+        	<button id="add-event-btn" class="add-event-btn">Add +</button>
+    </div>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
+
