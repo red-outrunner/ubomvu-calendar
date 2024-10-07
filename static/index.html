@@ -3,26 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calendar</title>
-    <link rel="stylesheet" href="/static/styles.css">
+    <title>Calendar with Event Sidebar</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
-        <h1 id="month-year"></h1>
+        <h2 id="month-year"></h2>
+
         <div class="calendar-nav">
             <button id="prev-month">Previous Month</button>
             <button id="next-month">Next Month</button>
         </div>
+
         <div class="calendar-grid">
-            <!-- Calendar cells will go here (the zone of magic!!!!!!!!()-->
+            <!-- Calendar days will be inserted here by JavaScript -->
         </div>
+
         <div id="event-popup" class="event-popup hidden">
-        	<p id="event-details"></p>
-        	<button id="add-event-btn" class="add-event-btn">Add +</button>
-    </div>
+            <button id="add-event">Add +</button>
+        </div>
+
+        <!-- Add the sidebar here -->
+        <div id="sidebar" class="hidden">
+            <button id="close-sidebar">Close</button>
+            <h2 id="selected-date"></h2>
+            <ul id="events-list"></ul>
+            <button id="create-event">Create Event</button>
+            <button id="update-event">Update Event</button>
+            <button id="delete-event">Delete Event</button>
+        </div>
     </div>
 
-    <script src="/static/app.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>
-
